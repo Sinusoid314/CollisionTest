@@ -9,7 +9,7 @@
 <canvas id="view" width="600" height="400" style="background-color:darkgray;"></canvas>
 
 <script language="javascript">
-  class Rectangle
+  class Sprite
   {
     constructor(left, top, width, height)
     {
@@ -34,7 +34,7 @@
     }
   }
 
-  class RectCollision
+  class SpriteCollision
   {
     constructor()
     {
@@ -49,10 +49,14 @@
   var deltaTime = 0;
   var maxDeltaTime = 0.03;
   var prevTime =  0;
-  var rect1 = new Rectangle(10, 10, 100, 100);
-  var rect2 = new Rectangle(100, 100, 50, 50);
-  var collision = new RectCollision;
+  var isPointerDown = false;
+  var pointerX, pointerY;
+  var sprite1 = new Sprite(10, 10, 100, 100);
+  var sprite2 = new Sprite(100, 100, 50, 50);
+  var collision = new SpriteCollision;
 
+  view.addEventListener("pointerdown", view_onPointerDown);
+  view.addEventListener("pointerUp", view_onPointerUp);
   window.requestAnimationFrame(drawLoop);
 
   function drawLoop()
@@ -62,53 +66,94 @@
     prevTime = Date.now();
     window.requestAnimationFrame(drawLoop);
 
-    if(rectsWillCollide(rect1, rect2, deltaTime, collision))
+    //if (GetMouse(0).bHeld)
+		//	vRects[0].vel += (vMouse - vRects[0].pos).norm() * 100.0f * fElapsedTime;
+
+    if(spritesWillCollide(sprite1, sprite2, deltaTime, collision))
     {
       
     }
 
-    rect1.update(deltaTime);
-    rect2.update(deltaTime);
+    sprite1.update(deltaTime);
+    sprite2.update(deltaTime);
 
     viewContext.clearRect(0, 0, viewContext.canvas.width, viewContext.canvas.height);
 
-    rect1.draw(viewContext);
-    rect2.draw(viewContext);
+    sprite1.draw(viewContext);
+    sprite2.draw(viewContext);
   }
 
-  function rayIntersectsRect(rayOriginX, rayOriginY, rayDirX, rayDirY, rectLeft, rectTop, rectWidth, rectHeight, collision)
+  function view_onPointerDown(event)
   {
-
+    pointerX = event.clientX;
+    pointerY = event.clientY;
+    isPointerDown = true;
   }
 
-  function rectsWillCollide(rect1, rect2, deltaTime, collision)
+  function view_onPointerUp(event)
   {
-    var relativeVelocityX = rect2.velocityX - rect1.velocityX;
-    var relativeVelocityY = rect2.velocityY - rect1.velocityY;
-    var extRectLeft, extRectTop, extRectWidth, extRectHeight;
-    var rect2CenterX, rect2CenterY;
-    var rect2DeltaX, rect2DeltaY;
+    isPointerDown = false;
+  }
+
+  function spritesWillCollide(sprite1, sprite2, deltaTime, collision)
+  {
+    var relativeVelocityX = spritet2.velocityX - sprite1.velocityX;
+    var relativeVelocityY = sprite2.velocityY - sprite1.velocityY;
+    var rayOriginX, rayOriginY, rayDirX, rayDirY;
+    var rectLeft, rectTop, rectWidth, rectHeight;
 
     if((relativeVelocityX == 0) && (relativeVelocityY == 0))
       return false;
 
-    extRectLeft = rect1.left - (rect2.width / 2);
-    extRectTop = rect1.top - (rect2.height / 2);
-    extRectWidth = rect1.width + rect2.width;
-    extRectHeight = rect1.height + rect2.height;
+    rayOriginX = sprite2.left + (sprite2.width / 2);
+    rayOriginY = sprite2.top + (sprite2.height / 2);
+    rayDirX = sprite2.velocityX * deltaTime;
+    rayDirY = sprite2.velocityY * deltaTime;
 
-    rect2CenterX = rect2.left + (rect2.width / 2);
-    rect2CenterY = rect2.top + (rect2.height / 2);
-    rect2DeltaX = rect2.velocityX * deltaTime;
-    rect2DeltaY = rect2.velocityY * deltaTime;
+    rectLeft = sprite1.left - (sprite2.width / 2);
+    rectTop = sprite1.top - (sprite2.height / 2);
+    rectWidth = sprite1.width + sprite2.width;
+    rectHeight = sprite1.height + sprite2.height;
   
-    if(rayIntersectsRect(rect2CenterX, rect2CenterY, rect2DeltaX, rect2DeltaY, extRectLeft, extRectTop, extRectWidth, extRectHeight, collision))
+    if(rayIntersectsRect(rayOriginX, rayOriginY, rayDirX, rayDirY, rectLeft, rectTop, rectWidth, rectHeight, collision))
       return ((collision.contactTime >= 0) && (collision.contactTime < 1));
     else
       return false;
   }
 
-  function rectsHaveCollided(rect1, rect2, deltaTime, collision)
+  function spritesHaveCollided(sprite1, sprite2, deltaTime, collision)
+  {
+    var relativeVelocityX = spritet2.velocityX - sprite1.velocityX;
+    var relativeVelocityY = sprite2.velocityY - sprite1.velocityY;
+    var sprite1PrevLeft, sprite1PrevTop, sprite2PrevLeft, sprite2PrevTop;
+    var rayOriginX, rayOriginY, rayDirX, rayDirY;
+    var rectLeft, rectTop, rectWidth, rectHeight;
+
+    if((relativeVelocityX == 0) && (relativeVelocityY == 0))
+      return false;
+
+    sprite1PrevLeft = sprite1.left - (sprite1.velocityX * deltaTime);
+    sprite1PrevTop = sprite1.top - (sprite1.velocityY * deltaTime);
+    sprite2PrevLeft = sprite2.left - (sprite2.velocityX * deltaTime);
+    sprite2PrevTop = sprite2.top - (sprite2.velocityY * deltaTime);
+
+    rayOriginX = sprite2PrevLeft + (sprite2.width / 2);
+    rayOriginY = sprite2PrevTop + (sprite2.height / 2);
+    rayDirX = sprite2.velocityX * deltaTime;
+    rayDirY = sprite2.velocityY * deltaTime;
+
+    rectLeft = sprite1PrevLeft - (sprite2.width / 2);
+    rectTop = sprite1PrevTop - (sprite2.height / 2);
+    rectWidth = sprite1.width + sprite2.width;
+    rectHeight = sprite1.height + sprite2.height;
+  
+    if(rayIntersectsRect(rayOriginX, rayOriginY, rayDirX, rayDirY, rectLeft, rectTop, rectWidth, rectHeight, collision))
+      return ((collision.contactTime >= 0) && (collision.contactTime < 1));
+    else
+      return false;
+  }
+
+  function rayIntersectsRect(rayOriginX, rayOriginY, rayDirX, rayDirY, rectLeft, rectTop, rectWidth, rectHeight, collision)
   {
 
   }

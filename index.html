@@ -1,0 +1,118 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="UTF-8" />
+    <title>Collision Test</title>
+</head>
+<body>
+
+<canvas id="view" width="600" height="400" style="background-color:darkgray;"></canvas>
+
+<script language="javascript">
+  class Rectangle
+  {
+    constructor(left, top, width, height)
+    {
+      this.left = left;
+      this.top = top;
+      this.width = width;
+      this.height = height;
+
+      this.velocityX = 0;
+      this.velocityY = 0;
+    }
+
+    update(deltaTime)
+    {
+      this.left += this.velocityX * deltaTime;
+      this.top += this.velocityY * deltaTime;
+    }
+
+    draw(context)
+    {
+      context.strokeRect(this.left, this.top, this.width, this.height);
+    }
+  }
+
+  class RectCollision
+  {
+    constructor()
+    {
+      this.contactTime = 0;
+      this.contactNormalX = 0;
+      this.contactNormalY = 0;
+    }
+  }
+
+  var view = document.getElementById("view");
+  var viewContext = view.getContext("2d");
+  var deltaTime = 0;
+  var maxDeltaTime = 0.03;
+  var prevTime =  0;
+  var rect1 = new Rectangle(10, 10, 100, 100);
+  var rect2 = new Rectangle(100, 100, 50, 50);
+  var collision = new RectCollision;
+
+  window.requestAnimationFrame(drawLoop);
+
+  function drawLoop()
+  {
+    if(prevTime != 0)
+      deltaTime = Math.min(((Date.now() - prevTime) / 1000), maxDeltaTime);
+    prevTime = Date.now();
+    window.requestAnimationFrame(drawLoop);
+
+    if(rectsWillCollide(rect1, rect2, deltaTime, collision))
+    {
+      
+    }
+
+    rect1.update(deltaTime);
+    rect2.update(deltaTime);
+
+    viewContext.clearRect(0, 0, viewContext.canvas.width, viewContext.canvas.height);
+
+    rect1.draw(viewContext);
+    rect2.draw(viewContext);
+  }
+
+  function rayIntersectsRect(rayOriginX, rayOriginY, rayDirX, rayDirY, rectLeft, rectTop, rectWidth, rectHeight, collision)
+  {
+
+  }
+
+  function rectsWillCollide(rect1, rect2, deltaTime, collision)
+  {
+    var relativeVelocityX = rect2.velocityX - rect1.velocityX;
+    var relativeVelocityY = rect2.velocityY - rect1.velocityY;
+    var extRectLeft, extRectTop, extRectWidth, extRectHeight;
+    var rect2CenterX, rect2CenterY;
+    var rect2DeltaX, rect2DeltaY;
+
+    if((relativeVelocityX == 0) && (relativeVelocityY == 0))
+      return false;
+
+    extRectLeft = rect1.left - (rect2.width / 2);
+    extRectTop = rect1.top - (rect2.height / 2);
+    extRectWidth = rect1.width + rect2.width;
+    extRectHeight = rect1.height + rect2.height;
+
+    rect2CenterX = rect2.left + (rect2.width / 2);
+    rect2CenterY = rect2.top + (rect2.height / 2);
+    rect2DeltaX = rect2.velocityX * deltaTime;
+    rect2DeltaY = rect2.velocityY * deltaTime;
+  
+    if(rayIntersectsRect(rect2CenterX, rect2CenterY, rect2DeltaX, rect2DeltaY, extRectLeft, extRectTop, extRectWidth, extRectHeight, collision))
+      return ((collision.contactTime >= 0) && (collision.contactTime < 1));
+    else
+      return false;
+  }
+
+  function rectsHaveCollided(rect1, rect2, deltaTime, collision)
+  {
+
+  }
+</script>
+
+</body>
+</html>

@@ -6,7 +6,7 @@
 </head>
 <body>
 
-<canvas id="view" width="600" height="400" style="background-color:darkgray;"></canvas>
+<canvas id="view" width="600" height="400" style="background-color:darkgray;" tabindex="1"></canvas>
 
 <script language="javascript">
   class Sprite
@@ -49,14 +49,11 @@
   var deltaTime = 0;
   var maxDeltaTime = 0.03;
   var prevTime =  0;
-  var isPointerDown = false;
-  var pointerX, pointerY;
-  var sprite1 = new Sprite(10, 10, 100, 100);
-  var sprite2 = new Sprite(100, 100, 50, 50);
+  var sprite1 = new Sprite(250, 150, 100, 100);
+  var sprite2 = new Sprite(10, 10, 50, 50);
   var collision = new SpriteCollision;
 
-  view.addEventListener("pointerdown", view_onPointerDown);
-  view.addEventListener("pointerUp", view_onPointerUp);
+  document.addEventListener("keydown", view_onKeyDown);
   window.requestAnimationFrame(drawLoop);
 
   function drawLoop()
@@ -66,12 +63,10 @@
     prevTime = Date.now();
     window.requestAnimationFrame(drawLoop);
 
-    //if (GetMouse(0).bHeld)
-		//	vRects[0].vel += (vMouse - vRects[0].pos).norm() * 100.0f * fElapsedTime;
-
     if(spritesWillCollide(sprite1, sprite2, deltaTime, collision))
     {
-      
+      sprite2.velocityX += collision.contactNormalX * Math.abs(sprite2.velocityX) * (1 - collision.contactTime);
+      sprite2.velocityY += collision.contactNormalY * Math.abs(sprite2.velocityY) * (1 - collision.contactTime);
     }
 
     sprite1.update(deltaTime);
@@ -83,16 +78,23 @@
     sprite2.draw(viewContext);
   }
 
-  function view_onPointerDown(event)
+  function view_onKeyDown(event)
   {
-    pointerX = event.clientX;
-    pointerY = event.clientY;
-    isPointerDown = true;
-  }
-
-  function view_onPointerUp(event)
-  {
-    isPointerDown = false;
+    switch(event.key)
+    {
+      case "ArrowUp":
+        sprite2.velocityY = -100;
+        break;
+      case "ArrowDown":
+        sprite2.velocityY = 100;
+        break;
+      case "ArrowLeft":
+        sprite2.velocityX = -100;
+        break;
+      case "ArrowRight":
+        sprite2.velocityX = 100;
+        break;
+    }
   }
 
   function spritesWillCollide(sprite1, sprite2, deltaTime, collision)
@@ -155,8 +157,65 @@
 
   function rayIntersectsRect(rayOriginX, rayOriginY, rayDirX, rayDirY, rectLeft, rectTop, rectWidth, rectHeight, collision)
   {
+    var invRayDirX = 1 / rayDirX;
+    var invRayDirY = 1 / rayDirY;
+
 
   }
+
+/*
+		bool RayVsRect(const olc::vf2d& ray_origin, const olc::vf2d& ray_dir, const rect* target, olc::vf2d& contact_point, olc::vf2d& contact_normal, float& t_hit_near)
+		{
+			contact_normal = { 0,0 };
+			contact_point = { 0,0 };
+
+			// Cache division
+			olc::vf2d invdir = 1.0f / ray_dir;
+
+			// Calculate intersections with rectangle bounding axes
+			olc::vf2d t_near = (target->pos - ray_origin) * invdir;
+			olc::vf2d t_far = (target->pos + target->size - ray_origin) * invdir;
+
+			if (std::isnan(t_far.y) || std::isnan(t_far.x)) return false;
+			if (std::isnan(t_near.y) || std::isnan(t_near.x)) return false;
+
+			// Sort distances
+			if (t_near.x > t_far.x) std::swap(t_near.x, t_far.x);
+			if (t_near.y > t_far.y) std::swap(t_near.y, t_far.y);
+
+			// Early rejection		
+			if (t_near.x > t_far.y || t_near.y > t_far.x) return false;
+
+			// Closest 'time' will be the first contact
+			t_hit_near = std::max(t_near.x, t_near.y);
+
+			// Furthest 'time' is contact on opposite side of target
+			float t_hit_far = std::min(t_far.x, t_far.y);
+
+			// Reject if ray direction is pointing away from object
+			if (t_hit_far < 0)
+				return false;
+
+			// Contact point of collision from parametric line equation
+			contact_point = ray_origin + t_hit_near * ray_dir;
+
+			if (t_near.x > t_near.y)
+				if (invdir.x < 0)
+					contact_normal = { 1, 0 };
+				else
+					contact_normal = { -1, 0 };
+			else if (t_near.x < t_near.y)
+				if (invdir.y < 0)
+					contact_normal = { 0, 1 };
+				else
+					contact_normal = { 0, -1 };
+
+			// Note if t_near == t_far, collision is principly in a diagonal
+			// so pointless to resolve. By returning a CN={0,0} even though its
+			// considered a hit, the resolver wont change anything.
+			return true;
+		}
+*/
 </script>
 
 </body>

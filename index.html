@@ -49,28 +49,39 @@
   var deltaTime = 0;
   var maxDeltaTime = 0.03;
   var prevTime =  0;
+  var animationFrameID = 0;
   var sprite1 = new Sprite(250, 150, 100, 100);
   var sprite2 = new Sprite(10, 10, 50, 50);
   var collision = new SpriteCollision;
 
   document.addEventListener("keydown", view_onKeyDown);
-  window.requestAnimationFrame(drawLoop);
+  animationFrameID = window.requestAnimationFrame(drawLoop);
 
   function drawLoop()
   {
     if(prevTime != 0)
       deltaTime = Math.min(((Date.now() - prevTime) / 1000), maxDeltaTime);
     prevTime = Date.now();
-    window.requestAnimationFrame(drawLoop);
+    animationFrameID = window.requestAnimationFrame(drawLoop);
 
-    if(spritesWillCollide(sprite1, sprite2, deltaTime, collision))
+/*
+    if((spritesWillCollide(sprite1, sprite2, deltaTime, collision)) && (collision.contactNormalY == -1))
     {
       sprite2.velocityX += collision.contactNormalX * Math.abs(sprite2.velocityX) * (1 - collision.contactTime);
       sprite2.velocityY += collision.contactNormalY * Math.abs(sprite2.velocityY) * (1 - collision.contactTime);
     }
+*/
 
     sprite1.update(deltaTime);
     sprite2.update(deltaTime);
+
+    if(spritesHaveCollided(sprite1, sprite2, deltaTime, collision))
+    {
+      sprite2.left += collision.contactNormalX * Math.abs(sprite2.velocityX) * (1 - collision.contactTime) * deltaTime;
+      sprite2.top += collision.contactNormalY * Math.abs(sprite2.velocityY) * (1 - collision.contactTime) * deltaTime;
+      sprite2.velocityX += collision.contactNormalX * Math.abs(sprite2.velocityX);
+      sprite2.velocityY += collision.contactNormalY * Math.abs(sprite2.velocityY);
+    }
 
     viewContext.clearRect(0, 0, viewContext.canvas.width, viewContext.canvas.height);
 
@@ -94,12 +105,15 @@
       case "ArrowRight":
         sprite2.velocityX = 100;
         break;
+      case "q":
+        cancelAnimationFrame(animationFrameID);
+        break;
     }
   }
 
   function spritesWillCollide(sprite1, sprite2, deltaTime, collision)
   {
-    var relativeVelocityX = spritet2.velocityX - sprite1.velocityX;
+    var relativeVelocityX = sprite2.velocityX - sprite1.velocityX;
     var relativeVelocityY = sprite2.velocityY - sprite1.velocityY;
     var rayOriginX, rayOriginY, rayDirX, rayDirY;
     var rectLeft, rectTop, rectWidth, rectHeight;
@@ -125,7 +139,7 @@
 
   function spritesHaveCollided(sprite1, sprite2, deltaTime, collision)
   {
-    var relativeVelocityX = spritet2.velocityX - sprite1.velocityX;
+    var relativeVelocityX = sprite2.velocityX - sprite1.velocityX;
     var relativeVelocityY = sprite2.velocityY - sprite1.velocityY;
     var sprite1PrevLeft, sprite1PrevTop, sprite2PrevLeft, sprite2PrevTop;
     var rayOriginX, rayOriginY, rayDirX, rayDirY;
@@ -162,6 +176,10 @@
     var nearTimeX, farTimeX, nearTimeY, farTimeY;
     var entryTime, exitTime;
 
+    collision.contactTime = 0;
+    collision.contactNormalX = 0;
+    collision.contactNormalY = 0;
+
     invRayDirX = 1 / rayDirX;
     invRayDirY = 1 / rayDirY;
 
@@ -191,17 +209,17 @@
 
     switch(entryTime)
     {
-      case leftTime:
-        collision.contactNormalX = -1;
-        break;
-      case rightTime:
-        collision.contactNormalX = 1;
-        break;
       case topTime:
         collision.contactNormalY = -1;
         break;
       case bottomTime:
         collision.contactNormalY = 1;
+        break;
+      case leftTime:
+        collision.contactNormalX = -1;
+        break;
+      case rightTime:
+        collision.contactNormalX = 1;
         break;
     }
     

@@ -157,10 +157,55 @@
 
   function rayIntersectsRect(rayOriginX, rayOriginY, rayDirX, rayDirY, rectLeft, rectTop, rectWidth, rectHeight, collision)
   {
-    var invRayDirX = 1 / rayDirX;
-    var invRayDirY = 1 / rayDirY;
+    var invRayDirX, invRayDirY;
+    var leftTime, rightTime, topTime, bottomTime;
+    var nearTimeX, farTimeX, nearTimeY, farTimeY;
+    var entryTime, exitTime;
 
+    invRayDirX = 1 / rayDirX;
+    invRayDirY = 1 / rayDirY;
 
+    leftTime = (rectLeft - rayOriginX) * invRayDirX;
+    rightTime = (rectLeft + rectWidth - rayOriginX) * invRayDirX;
+    topTime = (rectTop - rayOriginY) * invRayDirY;
+    bottomTime = (rectTop + rectHeight - rayOriginY) * invRayDirY;
+
+    if(Number.isNaN(leftTime) || Number.isNaN(rightTime) || Number.isNaN(topTime) || Number.isNaN(bottomTime))
+      return false;
+
+    nearTimeX = Math.min(leftTime, rightTime);
+    farTimeX = Math.max(leftTime, rightTime);
+    nearTimeY = Math.min(topTime, bottomTime);
+    farTimeY = Math.max(topTime, bottomTime);
+ 
+    if((nearTimeX > farTimeY) || (nearTimeY > farTimeX))
+      return false;
+
+    entryTime = Math.max(nearTimeX, nearTimeY);
+    exitTime = Math.min(farTimeX, farTimeY);
+
+    if(exitTime < 0)
+      return false;
+
+    collision.contactTime = entryTime;
+
+    switch(entryTime)
+    {
+      case leftTime:
+        collision.contactNormalX = -1;
+        break;
+      case rightTime:
+        collision.contactNormalX = 1;
+        break;
+      case topTime:
+        collision.contactNormalY = -1;
+        break;
+      case bottomTime:
+        collision.contactNormalY = 1;
+        break;
+    }
+    
+    return true;
   }
 
 /*

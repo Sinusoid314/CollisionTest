@@ -11,15 +11,15 @@
 <script language="javascript">
   class Sprite
   {
-    constructor(left, top, width, height)
+    constructor(left, top, width, height, velocityX, velocityY)
     {
       this.left = left;
       this.top = top;
       this.width = width;
       this.height = height;
 
-      this.velocityX = 0;
-      this.velocityY = 0;
+      this.velocityX = velocityX;
+      this.velocityY = velocityY;
     }
 
     update(deltaTime)
@@ -40,8 +40,8 @@
   var maxDeltaTime = 0.03;
   var prevTime =  0;
   var animationFrameID = 0;
-  var sprite1 = new Sprite(250, 150, 100, 100);
-  var sprite2 = new Sprite(10, 10, 50, 50);
+  var sprite1 = new Sprite(250, 250, 100, 100, 0, 0);
+  var sprite2 = new Sprite(10, 10, 50, 50, 0, 0);
   var spriteContact = {time: 0,
                        normalX: 0,
                        normalY: 0,
@@ -61,21 +61,31 @@
 /*
     if((spritesWillCollide(sprite1, sprite2, deltaTime, spriteContact)) && (spriteContact.normalY == -1))
     {
-      sprite2.velocityX += spriteContact.normalX * Math.abs(sprite2.velocityX) * (1 - spriteContact.time);
-      sprite2.velocityY += spriteContact.normalY * Math.abs(sprite2.velocityY) * (1 - spriteContact.time);
+      sprite2.velocityX += spriteContact.normalX * Math.abs(sprite2.velocityX) * (spriteContact.time);
+      sprite2.velocityY += spriteContact.normalY * Math.abs(sprite2.velocityY) * (spriteContact.time);
+      sprite1.velocityX -= spriteContact.normalX * Math.abs(sprite1.velocityX) * (spriteContact.time);
+      sprite1.velocityY -= spriteContact.normalY * Math.abs(sprite1.velocityY) * (spriteContact.time);
+      console.log("collision");
     }
 */
 
     sprite1.update(deltaTime);
     sprite2.update(deltaTime);
 
+
     if(spritesHaveCollided(sprite1, sprite2, deltaTime, spriteContact))
     {
-      sprite2.left += spriteContact.normalX * Math.abs(sprite2.velocityX) * (1 - spriteContact.time) * deltaTime;
-      sprite2.top += spriteContact.normalY * Math.abs(sprite2.velocityY) * (1 - spriteContact.time) * deltaTime;
+      sprite2.left += spriteContact.normalX * Math.round(Math.abs(sprite2.velocityX) * (spriteContact.time) * deltaTime);
+      sprite2.top += spriteContact.normalY * Math.round(Math.abs(sprite2.velocityY) * (spriteContact.time) * deltaTime);
+      sprite1.left -= spriteContact.normalX * Math.round(Math.abs(sprite1.velocityX) * (spriteContact.time) * deltaTime);
+      sprite1.top -= spriteContact.normalY * Math.round(Math.abs(sprite1.velocityY) * (spriteContact.time) * deltaTime);
+
       sprite2.velocityX += spriteContact.normalX * Math.abs(sprite2.velocityX);
       sprite2.velocityY += spriteContact.normalY * Math.abs(sprite2.velocityY);
+      sprite1.velocityX -= spriteContact.normalX * Math.abs(sprite1.velocityX);
+      sprite1.velocityY -= spriteContact.normalY * Math.abs(sprite1.velocityY);
     }
+
 
     viewContext.clearRect(0, 0, viewContext.canvas.width, viewContext.canvas.height);
 
@@ -173,6 +183,8 @@
     contact.time = 0;
     contact.normalX = 0;
     contact.normalY = 0;
+    contact.pointX = 0;
+    contact.pointY = 0;
 
     invRayDirX = 1 / rayDirX;
     invRayDirY = 1 / rayDirY;

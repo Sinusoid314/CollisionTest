@@ -11,8 +11,9 @@
 <script language="javascript">
   class Sprite
   {
-    constructor(x, y, width, height, velocityX, velocityY)
+    constructor(label, x, y, width, height, velocityX, velocityY)
     {
+      this.label = label;
       this.x = x;
       this.y = y;
       this.width = width;
@@ -36,6 +37,7 @@
     draw(context)
     {
       context.strokeRect(this.x, this.y, this.width, this.height);
+      context.fillText(this.label, this.x + 15, this.y + 15);
     }
   }
 
@@ -46,8 +48,8 @@
   var prevTime =  0;
   var timeEpsilon = 0.01;
   var animationFrameID = 0;
-  var sprite1 = new Sprite(250, 250, 100, 100, -50, -50);
-  var sprite2 = new Sprite(10, 10, 50, 50, 0, 0);
+  var sprite1 = new Sprite("1", 250, 250, 100, 100, -50, -50);
+  var sprite2 = new Sprite("2", 10, 10, 50, 50, 0, 0);
   var spriteContact = {time: 0,
                        normalX: 0,
                        normalY: 0,
@@ -71,6 +73,8 @@
       sprite2.velocityY += spriteContact.normalY * Math.abs(sprite2.velocityY) * (1 - spriteContact.time);
       sprite1.velocityX -= spriteContact.normalX * Math.abs(sprite1.velocityX) * (1 - spriteContact.time);
       sprite1.velocityY -= spriteContact.normalY * Math.abs(sprite1.velocityY) * (1 - spriteContact.time);
+
+      console.log(spriteContact.normalX + ", " + spriteContact.normalY);
     }
 
 
@@ -122,15 +126,15 @@
     if((relativeVelocityX == 0) && (relativeVelocityY == 0))
       return false;
 
-    rayOriginX = sprite2.x + (sprite2.width / 2);
-    rayOriginY = sprite2.y + (sprite2.height / 2);
+    rayOriginX = sprite1.x + (sprite1.width / 2);
+    rayOriginY = sprite1.y + (sprite1.height / 2);
     rayDirX = relativeVelocityX * deltaTime;
     rayDirY = relativeVelocityY * deltaTime;
 
-    rectX = sprite1.x - (sprite2.width / 2);
-    rectY = sprite1.y - (sprite2.height / 2);
-    rectWidth = sprite1.width + sprite2.width;
-    rectHeight = sprite1.height + sprite2.height;
+    rectX = sprite2.x - (sprite1.width / 2);
+    rectY = sprite2.y - (sprite1.height / 2);
+    rectWidth = sprite2.width + sprite1.width;
+    rectHeight = sprite2.height + sprite1.height;
   
     if(rayIntersectsRect(rayOriginX, rayOriginY, rayDirX, rayDirY, rectX, rectY, rectWidth, rectHeight, contact))
       return ((contact.time >= 0) && (contact.time < 1));
@@ -148,15 +152,15 @@
     if((relativeVelocityX == 0) && (relativeVelocityY == 0))
       return false;
 
-    rayOriginX = sprite2.prevX + (sprite2.width / 2);
-    rayOriginY = sprite2.prevY + (sprite2.height / 2);
+    rayOriginX = sprite1.prevX + (sprite1.width / 2);
+    rayOriginY = sprite1.prevY + (sprite1.height / 2);
     rayDirX = relativeVelocityX * deltaTime;
     rayDirY = relativeVelocityY * deltaTime;
 
-    rectX = sprite1.prevX - (sprite2.width / 2);
-    rectY = sprite1.prevY - (sprite2.height / 2);
-    rectWidth = sprite1.width + sprite2.width;
-    rectHeight = sprite1.height + sprite2.height;
+    rectX = sprite2.prevX - (sprite1.width / 2);
+    rectY = sprite2.prevY - (sprite1.height / 2);
+    rectWidth = sprite2.width + sprite1.width;
+    rectHeight = sprite2.height + sprite1.height;
   
     if(rayIntersectsRect(rayOriginX, rayOriginY, rayDirX, rayDirY, rectX, rectY, rectWidth, rectHeight, contact))
       return ((contact.time >= 0) && (contact.time < 1));

@@ -65,27 +65,27 @@
     prevTime = Date.now();
     animationFrameID = window.requestAnimationFrame(drawLoop);
 
-
+/*
     if((spritesWillCollide(sprite1, sprite2, deltaTime, spriteContact)))
     {
       sprite1.velocityX += spriteContact.normalX * Math.abs(sprite1.velocityX) * (1 - spriteContact.time);
       sprite1.velocityY += spriteContact.normalY * Math.abs(sprite1.velocityY) * (1 - spriteContact.time);
       sprite2.velocityX -= spriteContact.normalX * Math.abs(sprite2.velocityX) * (1 - spriteContact.time);
       sprite2.velocityY -= spriteContact.normalY * Math.abs(sprite2.velocityY) * (1 - spriteContact.time);
-
-      console.log(spriteContact.normalX + ", " + spriteContact.normalY);
     }
-
+*/
 
     sprite1.update(deltaTime);
     sprite2.update(deltaTime);
 
-/*
-    if(spritesHaveCollided(sprite1, sprite2, deltaTime, spriteContact))
+
+    if(spritesHaveCollided(sprite1, sprite2, deltaTime, spriteContact) && (spriteContact.normalY == 1))
     {
-      
+      sprite2.y = sprite1.y - sprite2.height;
+      sprite2.velocityY = 0;
+      sprite2.velocityX = 0;
     }
-*/
+
 
     viewContext.clearRect(0, 0, viewContext.canvas.width, viewContext.canvas.height);
 

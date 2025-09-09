@@ -24,6 +24,11 @@
 
       this.prevX = x;
       this.prevY = y;
+
+      this.hitBoxOffsetX = 0;
+      this.hitBoxOffsetY = 0;
+      this.hitBoxWidth = width;
+      this.hitBoxHeight = height;
     }
 
     update(deltaTime)
@@ -36,7 +41,12 @@
 
     draw(context)
     {
+      context.strokeStyle = "black";
       context.strokeRect(this.x, this.y, this.width, this.height);
+
+      context.strokeStyle = "red";
+      context.strokeRect(this.x + this.hitBoxOffsetX, this.y + this.hitBoxOffsetY, this.hitBoxWidth, this.hitBoxHeight);
+
       context.fillText(this.label, this.x + 15, this.y + 15);
     }
   }
@@ -55,6 +65,16 @@
                        normalY: 0,
                        pointX: 0,
                        pointY: 0};
+
+  sprite1.hitBoxOffsetX = 10;
+  sprite1.hitBoxOffsetY = 10;
+  sprite1.hitBoxWidth = sprite1.width - 20;
+  sprite1.hitBoxHeight = sprite1.height - 20;
+
+  sprite2.hitBoxOffsetX = 5;
+  sprite2.hitBoxOffsetY = 5;
+  sprite2.hitBoxWidth = sprite2.width - 10;
+  sprite2.hitBoxHeight = sprite2.height - 10;
 
   document.addEventListener("keydown", view_onKeyDown);
 
@@ -79,11 +99,12 @@
     sprite2.update(deltaTime);
 
 
-    if(spritesHaveCollided(sprite1, sprite2, deltaTime, spriteContact) && (spriteContact.normalY == 1))
+    if(spritesHaveCollided(sprite1, sprite2, deltaTime, spriteContact))
     {
-      sprite2.y = sprite1.y - sprite2.height;
-      sprite2.velocityY = 0;
-      sprite2.velocityX = 0;
+      sprite1.x += spriteContact.normalX * Math.abs(sprite1.velocityX) * (1 - spriteContact.time) * deltaTime;
+      sprite1.y += spriteContact.normalY * Math.abs(sprite1.velocityY) * (1 - spriteContact.time) * deltaTime;
+      sprite2.x -= spriteContact.normalX * Math.abs(sprite2.velocityX) * (1 - spriteContact.time) * deltaTime;
+      sprite2.y -= spriteContact.normalY * Math.abs(sprite2.velocityY) * (1 - spriteContact.time) * deltaTime;
     }
 
 
@@ -128,15 +149,15 @@
     if((relativeVelocityX == 0) && (relativeVelocityY == 0))
       return false;
 
-    rayOriginX = testSprite.x + (testSprite.width / 2);
-    rayOriginY = testSprite.y + (testSprite.height / 2);
+    rayOriginX = (testSprite.x + testSprite.hitBoxOffsetX) + (testSprite.hitBoxWidth / 2);
+    rayOriginY = (testSprite.y + testSprite.hitBoxOffsetY) + (testSprite.hitBoxHeight / 2);
     rayDirX = relativeVelocityX * deltaTime;
     rayDirY = relativeVelocityY * deltaTime;
 
-    rectX = referenceSprite.x - (testSprite.width / 2);
-    rectY = referenceSprite.y - (testSprite.height / 2);
-    rectWidth = referenceSprite.width + testSprite.width;
-    rectHeight = referenceSprite.height + testSprite.height;
+    rectX = (referenceSprite.x + referenceSprite.hitBoxOffsetX) - (testSprite.hitBoxWidth / 2);
+    rectY = (referenceSprite.y + referenceSprite.hitBoxOffsetY) - (testSprite.hitBoxHeight / 2);
+    rectWidth = referenceSprite.hitBoxWidth + testSprite.hitBoxWidth;
+    rectHeight = referenceSprite.hitBoxHeight + testSprite.hitBoxHeight;
   
     if(rayIntersectsRect(rayOriginX, rayOriginY, rayDirX, rayDirY, rectX, rectY, rectWidth, rectHeight, contact))
       return ((contact.time >= 0) && (contact.time < 1));
@@ -154,15 +175,15 @@
     if((relativeVelocityX == 0) && (relativeVelocityY == 0))
       return false;
 
-    rayOriginX = testSprite.prevX + (testSprite.width / 2);
-    rayOriginY = testSprite.prevY + (testSprite.height / 2);
+    rayOriginX = (testSprite.prevX + testSprite.hitBoxOffsetX) + (testSprite.hitBoxWidth / 2);
+    rayOriginY = (testSprite.prevY + testSprite.hitBoxOffsetY) + (testSprite.hitBoxHeight / 2);
     rayDirX = relativeVelocityX * deltaTime;
     rayDirY = relativeVelocityY * deltaTime;
 
-    rectX = referenceSprite.prevX - (testSprite.width / 2);
-    rectY = referenceSprite.prevY - (testSprite.height / 2);
-    rectWidth = referenceSprite.width + testSprite.width;
-    rectHeight = referenceSprite.height + testSprite.height;
+    rectX = (referenceSprite.prevX + referenceSprite.hitBoxOffsetX) - (testSprite.hitBoxWidth / 2);
+    rectY = (referenceSprite.prevY + referenceSprite.hitBoxOffsetY) - (testSprite.hitBoxHeight / 2);
+    rectWidth = referenceSprite.hitBoxWidth + testSprite.hitBoxWidth;
+    rectHeight = referenceSprite.hitBoxHeight + testSprite.hitBoxHeight;
   
     if(rayIntersectsRect(rayOriginX, rayOriginY, rayDirX, rayDirY, rectX, rectY, rectWidth, rectHeight, contact))
       return ((contact.time >= 0) && (contact.time < 1));
